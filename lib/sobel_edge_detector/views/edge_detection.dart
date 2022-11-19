@@ -3,6 +3,7 @@
 import 'dart:io';
 import 'package:edge_detection/sobel_edge_detector/utils.dart';
 import 'package:edge_detection/sobel_edge_detector/widgets.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -61,33 +62,31 @@ class _EdgeDetectorState extends State<EdgeDetector> {
         );
     }
 
-    Future<File> saveImagePermanently(String imagePath) async {
-      final directory = await getApplicationDocumentsDirectory();
-      print('Application directory path is ${directory.path}');
-      final name = basename(imagePath);
-      print('Image name is $name');
-      final image = File('${directory.path}/$name');
-      print('Image path is ${image.path}');
-      return File(imagePath).copy(image.path);
-    }
-
     Future handlePickImage(ImageSource source) async {
       imageUrl = '';
       image = null;
       byte = null;
       try {
-        final selectedImage = await pickImage(source);
-        if (selectedImage == null) {
-          // showErrorBanner();
+        final pickedImage = await pickImage(source);
+        if (pickedImage == null) {
           showSnackbar('image not selected', 1);
           return;
         }
-        // final tempImage = File(selectedImage.path);
-        final permImage = await saveImagePermanently(selectedImage.path);
-        Uint8List? sobel = await detectEdge(permImage.path);
+        var orgImage = File(pickedImage.path);
+        String orgImageName = defaultFileName('org');
+        orgImage = await changeFileNameOnly(orgImage, orgImageName);
+
+        // saving original image to gallery
+        await GallerySaver.saveImage(orgImage.path,
+            albumName: 'Edge Detection');
+
+        Uint8List? sobel = await detectEdge(orgImage.path);
+        // saving edge image to gallery
+        final img = await bytesToTempFile(sobel!, endName: 'edge');
+        await GallerySaver.saveImage(img.path, albumName: 'Edge Detection');
 
         setState(() {
-          image = permImage;
+          image = orgImage;
           byte = sobel;
         });
         showSnackbar('image selected', 1);
@@ -110,14 +109,6 @@ class _EdgeDetectorState extends State<EdgeDetector> {
       setState(() {
         imageUrl = url;
         byte = sobel;
-      });
-    }
-
-    void clearImageURl() {
-      setState(() {
-        imageUrl = '';
-        image = null;
-        byte = null;
       });
     }
 
@@ -176,7 +167,7 @@ class _EdgeDetectorState extends State<EdgeDetector> {
                           ),
                         ),
                         ElevatedButton(
-                          onPressed: clearImageURl,
+                          onPressed: clearImage,
                           child: const Text('Clear Image URL'),
                         ),
                       ],
