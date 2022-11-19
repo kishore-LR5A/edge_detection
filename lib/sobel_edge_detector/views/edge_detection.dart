@@ -122,31 +122,33 @@ class _EdgeDetectorState extends State<EdgeDetector> {
 
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Edge Detection'),
+          actions: [
+            IconButton(
+              onPressed: () {
+                clearImage();
+              },
+              icon: const Icon(
+                Icons.refresh,
+              ),
+            ),
+          ],
+        ),
         body: SingleChildScrollView(
           child: Column(
             children: [
-              const SizedBox(
-                height: 5,
-              ),
-              const Text(
-                'Plotline Edge Detection',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              const SizedBox(height: 10),
               image == null
                   ? imageUrl == ''
                       ? const PlaceholderImage()
                       : UrlImage(imageUrl: imageUrl)
-                  : ClipOval(
-                      child: Image.file(
-                        image!,
-                        fit: BoxFit.cover,
-                        height: 250,
-                        width: 250,
-                      ),
-                    ),
+                  : Image.file(
+                    image!,
+                    fit: BoxFit.scaleDown,
+                    // height: 300,
+                    // width: 300,
+                  ),
               Column(
                 children: [
                   const SizedBox(
@@ -222,9 +224,9 @@ class _EdgeDetectorState extends State<EdgeDetector> {
                   if (byte != null)
                     Image.memory(
                       byte!,
-                      fit: BoxFit.scaleDown,
-                      height: 300,
-                      width: 300,
+                      fit: BoxFit.contain,
+                      // height: 300,
+                      // width: 300,
                     ),
                 ],
               ),
