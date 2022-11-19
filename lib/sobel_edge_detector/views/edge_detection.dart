@@ -3,6 +3,7 @@ import 'package:edge_detection/constants.dart';
 import 'package:edge_detection/sobel_edge_detector/utils.dart';
 import 'package:edge_detection/sobel_edge_detector/widgets.dart';
 import 'package:gallery_saver/gallery_saver.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -150,6 +151,14 @@ class _EdgeDetectorState extends State<EdgeDetector> {
         appBar: AppBar(
           title: const Text('Edge Detection'),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.image_rounded),
+              onPressed: () {
+                context.pushNamed(
+                  'viewImages',
+                );
+              },
+            ),
             IconButton(
               onPressed: () {
                 clearImage();

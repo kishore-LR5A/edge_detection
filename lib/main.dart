@@ -1,4 +1,4 @@
-import 'package:edge_detection/sobel_edge_detector/views/edge_detection.dart';
+import 'package:edge_detection/config/app_router.dart';
 import 'package:flutter/material.dart';
 
 void main() async {
@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Edge Detector',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -30,7 +30,8 @@ class MyApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.dark,
-      home: const EdgeDetector(),
+      // home: const EdgeDetector(),
+      routerConfig: AppRouter().router,
     );
   }
 }
