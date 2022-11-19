@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_print
-
 import 'dart:io';
 import 'package:edge_detection/sobel_edge_detector/utils.dart';
 import 'package:edge_detection/sobel_edge_detector/widgets.dart';
@@ -8,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 
 class EdgeDetector extends StatefulWidget {
@@ -20,6 +17,7 @@ class EdgeDetector extends StatefulWidget {
 
 class _EdgeDetectorState extends State<EdgeDetector> {
   File? image;
+  File? mergedImage;
   Uint8List? byte;
   String imageUrl = '';
   final inputController = TextEditingController();
@@ -66,6 +64,7 @@ class _EdgeDetectorState extends State<EdgeDetector> {
       imageUrl = '';
       image = null;
       byte = null;
+      mergedImage = null;
       try {
         final pickedImage = await pickImage(source);
         if (pickedImage == null) {
@@ -77,24 +76,28 @@ class _EdgeDetectorState extends State<EdgeDetector> {
         orgImage = await changeFileNameOnly(orgImage, orgImageName);
 
         // saving original image to gallery
-        await GallerySaver.saveImage(orgImage.path,
-            albumName: 'Edge Detection');
-
+        // await GallerySaver.saveImage(orgImage.path,
+        //     albumName: 'Edge Detection');
+        // obtainint the edge detected image bytes of the original image
         Uint8List? sobel = await detectEdge(orgImage.path);
         // saving edge image to gallery
-        final img = await bytesToTempFile(sobel!, endName: 'edge');
-        await GallerySaver.saveImage(img.path, albumName: 'Edge Detection');
+        final edgeImage = await bytesToTempFile(sobel!, endName: 'edge');
+        // await GallerySaver.saveImage(edgeImage.path,
+        //     albumName: 'Edge Detection');
 
-        setState(() {
-          image = orgImage;
-          byte = sobel;
-        });
+        // merging the original image and the edge image
+        final merge = await mergeImages(orgImage.path, edgeImage.path);
+        await GallerySaver.saveImage(merge.path, albumName: 'Edge Detection');
+        setState(
+          () {
+            image = orgImage;
+            byte = sobel;
+            mergedImage = merge;
+          },
+        );
         showSnackbar('image selected', 1);
-      } on PlatformException catch (e) {
-        print(e.message);
+      } on PlatformException catch (_) {
         showErrorBanner();
-      } catch (e) {
-        print(e);
       }
     }
 
@@ -103,13 +106,22 @@ class _EdgeDetectorState extends State<EdgeDetector> {
       inputController.clear();
       final http.Response responseData = await http.get(Uri.parse(url));
       Uint8List urlBytes = responseData.bodyBytes;
-      final img = await bytesToTempFile(urlBytes);
-      Uint8List? sobel = await detectEdge(img.path);
+      var orgImage = await bytesToTempFile(urlBytes);
+      String orgImageName = defaultFileName('org');
+      orgImage = await changeFileNameOnly(orgImage, orgImageName);
+      Uint8List? sobel = await detectEdge(orgImage.path);
+      final edgeImage = await bytesToTempFile(sobel!, endName: 'edge');
+      // merging the original image and the edge image
+      final merge = await mergeImages(orgImage.path, edgeImage.path);
+      await GallerySaver.saveImage(merge.path, albumName: 'Edge Detection');
 
-      setState(() {
-        imageUrl = url;
-        byte = sobel;
-      });
+      setState(
+        () {
+          imageUrl = url;
+          byte = sobel;
+          mergedImage = merge;
+        },
+      );
     }
 
     void clearImage() {
@@ -117,6 +129,7 @@ class _EdgeDetectorState extends State<EdgeDetector> {
         imageUrl = '';
         image = null;
         byte = null;
+        mergedImage = null;
       });
     }
 
@@ -144,11 +157,11 @@ class _EdgeDetectorState extends State<EdgeDetector> {
                       ? const PlaceholderImage()
                       : UrlImage(imageUrl: imageUrl)
                   : Image.file(
-                    image!,
-                    fit: BoxFit.scaleDown,
-                    // height: 300,
-                    // width: 300,
-                  ),
+                      image!,
+                      fit: BoxFit.scaleDown,
+                      // height: 300,
+                      // width: 300,
+                    ),
               Column(
                 children: [
                   const SizedBox(
@@ -224,6 +237,13 @@ class _EdgeDetectorState extends State<EdgeDetector> {
                   if (byte != null)
                     Image.memory(
                       byte!,
+                      fit: BoxFit.contain,
+                      // height: 300,
+                      // width: 300,
+                    ),
+                  if (mergedImage != null)
+                    Image.file(
+                      mergedImage!,
                       fit: BoxFit.contain,
                       // height: 300,
                       // width: 300,
