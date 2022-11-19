@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:edge_detection/constants.dart';
 import 'package:edge_detection/sobel_edge_detector/utils.dart';
 import 'package:edge_detection/sobel_edge_detector/widgets.dart';
 import 'package:gallery_saver/gallery_saver.dart';
@@ -20,6 +21,7 @@ class _EdgeDetectorState extends State<EdgeDetector> {
   File? edgeImage;
   File? mergedImage;
   String imageUrl = '';
+
   final inputController = TextEditingController();
 
   @override
@@ -80,8 +82,9 @@ class _EdgeDetectorState extends State<EdgeDetector> {
       }
       // merging the original image and the edge image
       var mergeImage = await mergeImages(orgImage.path, edgeImage.path);
-      await GallerySaver.saveImage(mergeImage.path,
-          albumName: 'Edge Detection');
+      // await GallerySaver.saveImage(mergeImage.path,
+      //     albumName: 'Edge Detection');
+      await saveImageToAppDocDir(kSobelImagesDir, mergeImage);
 
       result['orgImage'] = orgImage;
       result['edgeImage'] = edgeImage;

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:edge_detection/constants.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart';
 import 'package:image_picker/image_picker.dart';
@@ -90,4 +91,36 @@ Future<File> changeFileNameOnly(File file, String newFileName) {
   var lastSeparator = path.lastIndexOf(Platform.pathSeparator);
   var newPath = path.substring(0, lastSeparator + 1) + newFileName;
   return file.rename(newPath);
+}
+
+Future<String> createFolderInAppDocDir(String folderName) async {
+  //Get this App Document Directory
+
+  final Directory appDocDir = await getApplicationDocumentsDirectory();
+  //App Document Directory + folder name
+  final Directory appDocDirFolder = Directory('${appDocDir.path}/$folderName/');
+
+  if (await appDocDirFolder.exists()) {
+    //if folder already exists return path
+    return appDocDirFolder.path;
+  } else {
+    //if folder not exists create folder and then return its path
+    final Directory appDocDirNewFolder =
+        await appDocDirFolder.create(recursive: true);
+    return appDocDirNewFolder.path;
+  }
+}
+
+Future<void> saveImageToAppDocDir(String folderName, File imageFile) async {
+  final String dir = await createFolderInAppDocDir(folderName);
+  final String fileName = basename(imageFile.path);
+  await imageFile.copy('$dir/$fileName');
+}
+
+Future<List<FileSystemEntity>> getSobelImages() async {
+  List<FileSystemEntity> folders;
+  final String path = await createFolderInAppDocDir(kSobelImagesDir);
+  final sobelDir = Directory(path);
+  folders = sobelDir.listSync(recursive: true, followLinks: false);
+  return folders;
 }
