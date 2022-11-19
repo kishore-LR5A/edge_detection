@@ -17,8 +17,8 @@ class EdgeDetector extends StatefulWidget {
 
 class _EdgeDetectorState extends State<EdgeDetector> {
   File? image;
+  File? edgeImage;
   File? mergedImage;
-  Uint8List? byte;
   String imageUrl = '';
   final inputController = TextEditingController();
 
@@ -60,10 +60,38 @@ class _EdgeDetectorState extends State<EdgeDetector> {
         );
     }
 
+    // enable save individual flag to save org and edge images individually to EdgeDetection folder
+    Future<Map<String, File>> handleImages(
+      File orgImage, {
+      bool saveIndividual = false,
+    }) async {
+      final Map<String, File> result = {};
+
+      String orgImageName = defaultFileName('org');
+      orgImage = await changeFileNameOnly(orgImage, orgImageName);
+
+      Uint8List? sobel = await detectEdge(orgImage.path);
+      final edgeImage = await bytesToTempFile(sobel!, endName: 'edge');
+      if (saveIndividual) {
+        await GallerySaver.saveImage(orgImage.path,
+            albumName: 'Edge Detection');
+        await GallerySaver.saveImage(edgeImage.path,
+            albumName: 'Edge Detection');
+      }
+      // merging the original image and the edge image
+      var mergeImage = await mergeImages(orgImage.path, edgeImage.path);
+      await GallerySaver.saveImage(mergeImage.path,
+          albumName: 'Edge Detection');
+
+      result['orgImage'] = orgImage;
+      result['edgeImage'] = edgeImage;
+      result['mergedImage'] = mergeImage;
+      return result;
+    }
+
     Future handlePickImage(ImageSource source) async {
       imageUrl = '';
       image = null;
-      byte = null;
       mergedImage = null;
       try {
         final pickedImage = await pickImage(source);
@@ -72,27 +100,12 @@ class _EdgeDetectorState extends State<EdgeDetector> {
           return;
         }
         var orgImage = File(pickedImage.path);
-        String orgImageName = defaultFileName('org');
-        orgImage = await changeFileNameOnly(orgImage, orgImageName);
-
-        // saving original image to gallery
-        // await GallerySaver.saveImage(orgImage.path,
-        //     albumName: 'Edge Detection');
-        // obtainint the edge detected image bytes of the original image
-        Uint8List? sobel = await detectEdge(orgImage.path);
-        // saving edge image to gallery
-        final edgeImage = await bytesToTempFile(sobel!, endName: 'edge');
-        // await GallerySaver.saveImage(edgeImage.path,
-        //     albumName: 'Edge Detection');
-
-        // merging the original image and the edge image
-        final merge = await mergeImages(orgImage.path, edgeImage.path);
-        await GallerySaver.saveImage(merge.path, albumName: 'Edge Detection');
+        Map<String, File> images = await handleImages(orgImage);
         setState(
           () {
-            image = orgImage;
-            byte = sobel;
-            mergedImage = merge;
+            image = images['orgImage'];
+            edgeImage = images['edgeImage'];
+            mergedImage = images['mergedImage'];
           },
         );
         showSnackbar('image selected', 1);
@@ -107,30 +120,26 @@ class _EdgeDetectorState extends State<EdgeDetector> {
       final http.Response responseData = await http.get(Uri.parse(url));
       Uint8List urlBytes = responseData.bodyBytes;
       var orgImage = await bytesToTempFile(urlBytes);
-      String orgImageName = defaultFileName('org');
-      orgImage = await changeFileNameOnly(orgImage, orgImageName);
-      Uint8List? sobel = await detectEdge(orgImage.path);
-      final edgeImage = await bytesToTempFile(sobel!, endName: 'edge');
-      // merging the original image and the edge image
-      final merge = await mergeImages(orgImage.path, edgeImage.path);
-      await GallerySaver.saveImage(merge.path, albumName: 'Edge Detection');
 
+      Map<String, File> images = await handleImages(orgImage);
       setState(
         () {
           imageUrl = url;
-          byte = sobel;
-          mergedImage = merge;
+          edgeImage = images['edgeImage'];
+          mergedImage = images['mergedImage'];
         },
       );
     }
 
     void clearImage() {
-      setState(() {
-        imageUrl = '';
-        image = null;
-        byte = null;
-        mergedImage = null;
-      });
+      setState(
+        () {
+          imageUrl = '';
+          image = null;
+          mergedImage = null;
+          inputController.clear();
+        },
+      );
     }
 
     return SafeArea(
@@ -234,13 +243,6 @@ class _EdgeDetectorState extends State<EdgeDetector> {
                   const SizedBox(
                     height: 10,
                   ),
-                  if (byte != null)
-                    Image.memory(
-                      byte!,
-                      fit: BoxFit.contain,
-                      // height: 300,
-                      // width: 300,
-                    ),
                   if (mergedImage != null)
                     Image.file(
                       mergedImage!,

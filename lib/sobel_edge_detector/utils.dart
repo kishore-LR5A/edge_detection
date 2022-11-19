@@ -71,7 +71,7 @@ String defaultFileName(String endName) {
 // merge 2 images to one image
 Future<File> mergeImages(String imagePath1, String imagePath2) async {
   final tempDir = await getTemporaryDirectory();
-  final String fileName = 'image_${DateTime.now().millisecondsSinceEpoch}.png';
+  final String fileName = defaultFileName('merge');
   File file = await File('${tempDir.path}/$fileName').create();
   // merge 2 images
   final image1 = decodeImage(File(imagePath1).readAsBytesSync())!;
