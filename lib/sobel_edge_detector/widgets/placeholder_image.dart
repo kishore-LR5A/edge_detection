@@ -17,7 +17,7 @@ class PlaceholderImage extends StatelessWidget {
           ),
           const Positioned(
             bottom: 5,
-            left: 50,
+            left: 40,
             child: Text(
               'No Image Selected',
               style: TextStyle(

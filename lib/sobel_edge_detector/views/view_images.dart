@@ -32,7 +32,7 @@ class _ViewImagesState extends State<ViewImages> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('View Images'),
+        title: const Text('Images'),
       ),
       body: files.isEmpty
           ? Center(
@@ -66,11 +66,14 @@ class _ViewImagesState extends State<ViewImages> {
                           },
                         );
                       },
-                      child: Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: Image.file(
-                          File(file.path),
-                          fit: BoxFit.contain,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(30),
+                        child: Padding(
+                          padding: const EdgeInsets.all(5.0),
+                          child: Image.file(
+                            File(file.path),
+                            fit: BoxFit.fitWidth,
+                          ),
                         ),
                       ),
                     ),

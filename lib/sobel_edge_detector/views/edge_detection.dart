@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:edge_detection/constants.dart';
 import 'package:edge_detection/sobel_edge_detector/utils.dart';
 import 'package:edge_detection/sobel_edge_detector/widgets.dart';
+import 'package:edge_detection/sobel_edge_detector/widgets/loading_indicator.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
@@ -21,6 +22,7 @@ class _EdgeDetectorState extends State<EdgeDetector> {
   File? edgeImage;
   File? mergedImage;
   String imageUrl = '';
+  bool isLoading = false;
 
   final inputController = TextEditingController();
 
@@ -99,10 +101,16 @@ class _EdgeDetectorState extends State<EdgeDetector> {
       imageUrl = '';
       image = null;
       mergedImage = null;
+      setState(() {
+        isLoading = true;
+      });
       try {
         final pickedImage = await pickImage(source);
         if (pickedImage == null) {
           showSnackbar('image not selected', 1);
+          setState(() {
+            isLoading = false;
+          });
           return;
         }
         var orgImage = File(pickedImage.path);
@@ -112,9 +120,10 @@ class _EdgeDetectorState extends State<EdgeDetector> {
             image = images['orgImage'];
             edgeImage = images['edgeImage'];
             mergedImage = images['mergedImage'];
+            isLoading = false;
           },
         );
-        showSnackbar('image selected', 1);
+        // showSnackbar('image selected', 1);
       } on PlatformException catch (_) {
         showErrorBanner();
       }
@@ -122,6 +131,9 @@ class _EdgeDetectorState extends State<EdgeDetector> {
 
     // input on submit
     void handleInputSubmit(String url) async {
+      setState(() {
+        isLoading = true;
+      });
       inputController.clear();
       final http.Response responseData = await http.get(Uri.parse(url));
       Uint8List urlBytes = responseData.bodyBytes;
@@ -133,6 +145,7 @@ class _EdgeDetectorState extends State<EdgeDetector> {
           imageUrl = url;
           edgeImage = images['edgeImage'];
           mergedImage = images['mergedImage'];
+          isLoading = false;
         },
       );
     }
@@ -144,6 +157,7 @@ class _EdgeDetectorState extends State<EdgeDetector> {
           image = null;
           mergedImage = null;
           inputController.clear();
+          isLoading = false;
         },
       );
     }
@@ -175,15 +189,16 @@ class _EdgeDetectorState extends State<EdgeDetector> {
           child: Column(
             children: [
               const SizedBox(height: 10),
+              if (isLoading) const LoadingIndicator(),
               image == null
                   ? imageUrl == ''
                       ? const PlaceholderImage()
                       : UrlImage(imageUrl: imageUrl)
                   : Image.file(
                       image!,
-                      fit: BoxFit.scaleDown,
-                      // height: 300,
-                      // width: 300,
+                      fit: BoxFit.contain,
+                      height: 300,
+                      width: 300,
                     ),
               Column(
                 children: [
@@ -257,13 +272,17 @@ class _EdgeDetectorState extends State<EdgeDetector> {
                   const SizedBox(
                     height: 10,
                   ),
-                  if (mergedImage != null)
+                  if (mergedImage != null) ...[
                     Image.file(
                       mergedImage!,
                       fit: BoxFit.contain,
-                      // height: 300,
-                      // width: 300,
+                      height: 600,
+                      width: 300,
                     ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                  ]
                 ],
               ),
             ],
