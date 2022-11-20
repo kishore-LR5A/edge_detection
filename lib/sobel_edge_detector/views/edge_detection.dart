@@ -8,7 +8,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path/path.dart';
 
 class EdgeDetector extends StatefulWidget {
   const EdgeDetector({super.key});
@@ -34,7 +33,7 @@ class _EdgeDetectorState extends State<EdgeDetector> {
   @override
   Widget build(BuildContext context) {
     final errorBanner = MaterialBanner(
-      content: const Text('Photo Not Selected'),
+      content: const Text('Platform Exception'),
       actions: [
         TextButton(
           onPressed: () {
@@ -46,13 +45,16 @@ class _EdgeDetectorState extends State<EdgeDetector> {
       // backgroundColor: Colors.indigo,
     );
     void showErrorBanner() {
-      ScaffoldMessenger.of(context).showMaterialBanner(errorBanner);
+      ScaffoldMessenger.of(context)
+        ..hideCurrentMaterialBanner()
+        ..showMaterialBanner(errorBanner);
     }
 
     void showSnackbar(String message, int duration) {
       ScaffoldMessenger.of(context)
         // this hides the existing snackbar if there is one
-        ..hideCurrentMaterialBanner
+        ..hideCurrentMaterialBanner()
+        ..hideCurrentSnackBar()
         ..showSnackBar(
           SnackBar(
             content: Text(

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
 
 class ViewImage extends StatelessWidget {
   const ViewImage({
@@ -14,15 +13,23 @@ class ViewImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // String fileName = basename(path);
     return Scaffold(
       appBar: AppBar(
         title: Text(name),
       ),
       body: Center(
-        child: Image.file(
-          File(path),
-          fit: BoxFit.contain,
+        child: InteractiveViewer(
+          clipBehavior: Clip.none,
+          child: AspectRatio(
+            aspectRatio: 2 / 1,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: Image.file(
+                File(path),
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
         ),
       ),
     );

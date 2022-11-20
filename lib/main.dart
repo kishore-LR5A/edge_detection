@@ -13,9 +13,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Edge Detector',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
       darkTheme: ThemeData.dark().copyWith(
         snackBarTheme: const SnackBarThemeData(
           backgroundColor: Colors.black,

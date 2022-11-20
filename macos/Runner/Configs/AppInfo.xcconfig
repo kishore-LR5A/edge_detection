@@ -5,10 +5,10 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = edge_detection
+PRODUCT_NAME = Edge_Detector;
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.edgeDetection
+PRODUCT_BUNDLE_IDENTIFIER = com.yaadava_kishore.edge_detector;
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2022 com.example. All rights reserved.

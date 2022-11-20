@@ -8,7 +8,6 @@ import 'package:path/path.dart';
 class ViewImages extends StatefulWidget {
   const ViewImages({
     super.key,
-    // required this.files,
   });
 
   @override
@@ -35,31 +34,46 @@ class _ViewImagesState extends State<ViewImages> {
       appBar: AppBar(
         title: const Text('View Images'),
       ),
-      body: GridView.count(
-        crossAxisCount: 2,
-        children: [
-          for (var file in files)
-            Card(
-              child: InkWell(
-                onTap: () {
-                  GoRouter.of(context).pushNamed(
-                    'viewImage',
-                    params: {
-                      'name': basename(file.path),
+      body: files.isEmpty
+          ? Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('No Images Found'),
+                  ElevatedButton(
+                    onPressed: () {
+                      GoRouter.of(context).pop();
                     },
-                    queryParams: {
-                      'path': file.path,
-                    },
-                  );
-                },
-                child: Image.file(
-                  File(file.path),
-                  fit: BoxFit.contain,
-                ),
+                    child: const Text('Go to Edge Detector'),
+                  )
+                ],
               ),
+          )
+          : GridView.count(
+              crossAxisCount: 2,
+              children: [
+                for (var file in files)
+                  Card(
+                    child: InkWell(
+                      onTap: () {
+                        GoRouter.of(context).pushNamed(
+                          'viewImage',
+                          params: {
+                            'name': basename(file.path),
+                          },
+                          queryParams: {
+                            'path': file.path,
+                          },
+                        );
+                      },
+                      child: Image.file(
+                        File(file.path),
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+              ],
             ),
-        ],
-      ),
     );
   }
 }
