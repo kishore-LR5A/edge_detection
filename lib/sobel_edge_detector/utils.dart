@@ -78,9 +78,9 @@ Future<File> mergeImages(String imagePath1, String imagePath2) async {
   final image1 = decodeImage(File(imagePath1).readAsBytesSync())!;
   final image2 = decodeImage(File(imagePath2).readAsBytesSync())!;
   final mergedImage =
-      Image(image1.width + image2.width, max(image1.height, image2.height));
+      Image(max(image1.width, image2.width), image1.height + image2.height);
   copyInto(mergedImage, image1, blend: false);
-  copyInto(mergedImage, image2, dstX: image1.width, blend: false);
+  copyInto(mergedImage, image2, dstY: image1.height, blend: false);
   // write image data to a file
   file.writeAsBytesSync(encodeJpg(mergedImage));
   return file;

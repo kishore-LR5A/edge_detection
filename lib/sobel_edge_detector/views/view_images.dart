@@ -36,8 +36,8 @@ class _ViewImagesState extends State<ViewImages> {
       ),
       body: files.isEmpty
           ? Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text('No Images Found'),
                   ElevatedButton(
@@ -48,7 +48,7 @@ class _ViewImagesState extends State<ViewImages> {
                   )
                 ],
               ),
-          )
+            )
           : GridView.count(
               crossAxisCount: 2,
               children: [
@@ -66,9 +66,12 @@ class _ViewImagesState extends State<ViewImages> {
                           },
                         );
                       },
-                      child: Image.file(
-                        File(file.path),
-                        fit: BoxFit.contain,
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Image.file(
+                          File(file.path),
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
                   ),

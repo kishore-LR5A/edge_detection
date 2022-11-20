@@ -20,8 +20,8 @@ class ViewImage extends StatelessWidget {
       body: Center(
         child: InteractiveViewer(
           clipBehavior: Clip.none,
-          child: AspectRatio(
-            aspectRatio: 2 / 1,
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
               child: Image.file(
